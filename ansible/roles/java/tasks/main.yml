@@ -1,5 +1,4 @@
 ---
-
 - name: install {{ java_package }}
   become: yes
   yum:

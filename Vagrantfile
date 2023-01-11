@@ -10,11 +10,11 @@ Vagrant.configure("2") do |config|
     system "vagrant plugin install #{plugin}" unless Vagrant.has_plugin? plugin
   end
 
-  config.vm.box = "markush81/centos8-vbox-guestadditions"
+  config.vm.box = "boxomatic/centos-8"
   config.vm.box_check_update = true
 
+  #config.vm.synced_folder "exchange", "/home/vagrant/exchange", type: "nfs"
   config.vm.synced_folder "exchange", "/home/vagrant/exchange", create: true, SharedFoldersEnableSymlinksCreate: true
-
   config.trigger.after :destroy do |trigger|
     trigger.run = { inline: 'rm -rf exchange/ssl && rm -rf exchange/ssl-client'}
   end
@@ -27,7 +27,7 @@ Vagrant.configure("2") do |config|
       vb.memory = "4096"
       vb.cpus = "2"
     end
-    mon.vm.network :private_network, ip: "192.168.10.2", auto_config: true
+    mon.vm.network :private_network, ip: "192.168.56.2", auto_config: true
 
     mon.vm.provision :ansible do |ansible|
       ansible.compatibility_mode = "2.0"
@@ -44,7 +44,7 @@ Vagrant.configure("2") do |config|
       vb.memory = "2048"
       vb.cpus = "1"
     end
-    mon.vm.network :private_network, ip: "192.168.10.3", auto_config: true
+    mon.vm.network :private_network, ip: "192.168.56.3", auto_config: true
 
     mon.vm.provision :ansible do |ansible|
       ansible.compatibility_mode = "2.0"
@@ -72,7 +72,7 @@ Vagrant.configure("2") do |config|
         vb.memory = "3072"
         vb.cpus = "1"
       end
-      kafka.vm.network :private_network, ip: "192.168.10.#{3 + i}", auto_config: true
+      kafka.vm.network :private_network, ip: "192.168.56.#{3 + i}", auto_config: true
 
       if i == KAFKA
 
