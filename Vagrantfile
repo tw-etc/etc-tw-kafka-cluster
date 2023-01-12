@@ -1,7 +1,7 @@
 ENV["LC_ALL"] = "en_US.UTF-8"
 
 # if sth. gets changed here, also adapt /ansible/inventories/vbox/hosts
-KAFKA = 3
+KAFKA = 1
 
 Vagrant.configure("2") do |config|
 
