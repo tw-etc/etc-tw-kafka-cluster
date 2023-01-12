@@ -40,6 +40,8 @@ Thats why I have for now setup to use KAFKA =1 in the VagrantFile else the mac b
 
 :warning: Vagrant might ask you for your admin password. The reason behind is, that `vagrant-hostsupdater` is used to have the vms available with their names in your network.
 
+* the vms use the IP range compatible to your network , in my network i used 192.168.56.0/22 , But in case your network is different range then make changes to the VagrantFile to use the ips for mon-1 , mon-2 and kafka using the range fits your network.
+
 ## Init
 Once the above requirements are set , you can do the following and vagrant up would take about 30 mins or so . get some coffee
 
