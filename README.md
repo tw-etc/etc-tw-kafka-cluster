@@ -22,14 +22,26 @@ see [AWS](AWS.md)
 ## Prerequisites
 
 * [Vagrant](https://www.vagrantup.com) (tested with 2.2.18)
+
+```bash
+$ brew install vagrant
+```
 * [VirtualBox](http://virtualbox.org) (tested with 6.1.26)
+Download latest virtualbox compatible to MACOX
+
 * [Ansible](http://docs.ansible.com/ansible/index.html) (tested with 4.5.0)
+```bash
+$ brew install ansible
+```
 * The VMs take approx 15 GB of RAM, so you should have more than that.
+
+Thats why I have for now setup to use KAFKA =1 in the VagrantFile else the mac books we have in thoughtworks does not have more than 16 GB ram
 
 
 :warning: Vagrant might ask you for your admin password. The reason behind is, that `vagrant-hostsupdater` is used to have the vms available with their names in your network.
 
 ## Init
+Once the above requirements are set , you can do the following and vagrant up would take about 30 mins or so . get some coffee
 
 ```bash
 git clone https://github.com/markush81/kafka-cluster.git
