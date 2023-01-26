@@ -170,6 +170,8 @@ zookeeper.set.acl=true
 {% else %}
 zookeeper.connect={% for server in groups['zookeeper'] %}{% if loop.index > 1%},{% endif %}{{ server }}:2181{% endfor %}
 {% endif %}
+
+
 # Timeout in ms for connecting to zookeeper
 zookeeper.connection.timeout.ms=6000
 ############################# Group Coordinator Settings #############################

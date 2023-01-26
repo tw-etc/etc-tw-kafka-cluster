@@ -1,0 +1,59 @@
+- hosts: elk
+  remote_user: ec2-user
+  serial: 100%
+  roles:
+    - java
+    - elasticsearch
+    - kibana
+    - metricbeat
+  tasks:
+    - name: metricbeat modules enable elasticsearch-xpack
+      become: yes
+      command: metricbeat modules enable elasticsearch-xpack
+
+    - name: metricbeat modules enable kibana-xpack
+      become: yes
+      command: metricbeat modules enable kibana-xpack
+
+    - name: restart metricbeat
+      become: yes
+      systemd:
+        enabled: yes
+        state: restarted
+        name: metricbeat
+        daemon_reload: yes
+
+- hosts: prometheus
+  remote_user: ec2-user
+  serial: 100%
+  roles:
+    - metricbeat
+    - prometheus
+
+- hosts: grafana
+  remote_user: ec2-user
+  serial: 100%
+  roles:
+    - grafana
+
+- hosts: kafka
+  remote_user: ec2-user
+  serial: 33%
+  roles:
+    - java
+    - filebeat
+    - metricbeat
+    - secure
+    - kafka
+
+- hosts: kafka
+  remote_user: ec2-user
+  serial: 33%
+  tasks:
+    - name: restart
+      become: yes
+      systemd:
+        enabled: yes
+        state: restarted
+        name: kafka
+        daemon_reload: yes

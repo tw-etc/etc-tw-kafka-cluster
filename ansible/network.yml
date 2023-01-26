@@ -1,5 +1,5 @@
 - hosts: network
-  remote_user: vagrant
+  remote_user: ec2-user
   serial: 100%
   roles:
   - common

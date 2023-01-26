@@ -3,7 +3,7 @@ Description=Prometheus Service
 After=network-online.target
 
 [Service]
-User=vagrant
+User=ec2-user
 ExecStart={{ prometheus_home }}/prometheus --config.file={{ prometheus_home }}/prometheus.yml --storage.tsdb.path={{ prometheus_home }}/data
 Restart=on-failure
 

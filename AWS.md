@@ -8,12 +8,26 @@ Creating a kafka-cluster with monitoring tools setup in [AWS](https://aws.amazon
 
 Adapt [ansible/inventories/aws/hosts](ansible/inventories/aws/hosts) according to your setup.
 
+* Create 5 EC2 instances in AWS using READHAT 8 or above
+* generate key/value pair file and download to your local and add permissions as chmod 400
+* copy all the 5 public dns names in the ansible/inventories/aws/hosts
+*
+
+## pre-req
+
+```
+run this command on all the monitor servers if REDHAT 9 is used , if REDHAT 8 no need to run
+
+sudo update-crypto-policies --set DEFAULT:SHA1
+
+```
+
 ## Setup
 
 ```bash
 cd ansible
 
-ansible-playbook -i inventories/aws/ cluster.yml
+ansible-playbook -i inventories/aws/ --private-key ~/bdavay.cer cluster-aws.yml
 ```
 
 ### Connections
