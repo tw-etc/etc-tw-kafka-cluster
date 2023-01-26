@@ -11,7 +11,7 @@ Adapt [ansible/inventories/aws/hosts](ansible/inventories/aws/hosts) according t
 * Create 5 EC2 instances in AWS using READHAT 8 or above
 * generate key/value pair file and download to your local and add permissions as chmod 400
 * copy all the 5 public dns names in the ansible/inventories/aws/hosts
-*
+
 
 ## pre-req
 
@@ -36,6 +36,11 @@ ansible-playbook -i inventories/aws/ --private-key ~/bdavay.cer cluster-aws.yml
 |:-- |:-- |
 |Kafka Brokers|kafka-1:9092,kafka-2:9092,kafka-3:9092|
 
+```
+ec2-3-142-245-199.us-east-2.compute.amazonaws.com for kafka1
+ec2-18-220-119-8.us-east-2.compute.amazonaws.com for kafka2
+ec2-3-16-67-156.us-east-2.compute.amazonaws.com for kafka3
+```
 
 ## Kafka
 
@@ -44,13 +49,13 @@ Either ssh into one of your machines where Kafka is installed or install Kafka C
 ### Topic Creation
 
 ```bash
-kafka-topics.sh --zookeeper kafka-1:2181 --create --replication-factor 1 --partitions 4 --topic sample
+kafka-topics.sh --zookeeper ec2-18-220-119-8.us-east-2.compute.amazonaws.com:2181 --create --replication-factor 1 --partitions 4 --topic sample
 ```
 
 ### Producer
 
 ```bash
-kafka-console-producer.sh --broker-list kafka-1:9092,kafka-3:9092 --topic sample
+kafka-console-producer.sh --broker-list ec2-3-142-245-199.us-east-2.compute.amazonaws.com:9092,ec2-3-16-67-156.us-east-2.compute.amazonaws.com:9092 --topic sample
 
 Hey, is Kafka up and running?
 ```
@@ -58,7 +63,7 @@ Hey, is Kafka up and running?
 ### Consumer
 
 ```bash
-kafka-console-consumer.sh --bootstrap-server kafka-1:9092,kafka-3:9092 --topic sample --from-beginning
+kafka-console-consumer.sh --bootstrap-server ec2-3-142-245-199.us-east-2.compute.amazonaws.com:9092,ec2-3-16-67-156.us-east-2.compute.amazonaws.com:9092 --topic sample --from-beginning
 
 Hey, is Kafka up and running?
 ```
@@ -66,6 +71,6 @@ Hey, is Kafka up and running?
 ### Producer Perf Test
 
 ```bash
-kafka-producer-perf-test.sh --producer-props bootstrap.servers="kafka-1:9092,kafka-2:9092,kafka-3:9092" --topic sample --num-records 2000 --throughput 100 --record-size 256
+kafka-producer-perf-test.sh --producer-props bootstrap.servers="ec2-3-142-245-199.us-east-2.compute.amazonaws.com:9092,ec2-18-220-119-8.us-east-2.compute.amazonaws.com:9092,ec2-3-16-67-156.us-east-2.compute.amazonaws.com:9092" --topic sample --num-records 2000 --throughput 100 --record-size 256
 
 ```
