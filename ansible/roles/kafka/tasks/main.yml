@@ -31,8 +31,8 @@
     regexp: '^PATH'
     line: 'PATH=$PATH:{{ kafka_home }}/bin'
 
-- import_tasks: zookeeper.yml
-  tags: zookeeper
+# - import_tasks: zookeeper.yml
+#   tags: zookeeper
 
 - import_tasks: kafka.yml
   tags: kafka

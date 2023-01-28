@@ -30,6 +30,10 @@ cd ansible
 ansible-playbook -i inventories/aws/ --private-key ~/bdavay.cer cluster-aws.yml
 ```
 
+## workarounds
+* for some reason metriceat wouldnt start so i had to go to each kafka node and run this -> sudo systemctl restart metricbeat --now
+
+
 ### Connections
 
 | Name | |

@@ -6,7 +6,7 @@ After=network-online.target
 EnvironmentFile={{ kafka_home }}/kafka.environment
 Type=forking
 User=root
-ExecStart={{ kafka_home }}/bin/kafka-server-start.sh -daemon {{ kafka_home }}/config/server.properties
+ExecStart={{ kafka_home }}/bin/kafka-server-start.sh -daemon {{ kafka_home }}/config/kraft/server.properties
 ExecStop={{ kafka_home }}/bin/kafka-server-start.sh stop
 Restart=on-failure
 

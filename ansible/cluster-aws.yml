@@ -2,6 +2,7 @@
   remote_user: ec2-user
   serial: 100%
   roles:
+    - common
     - java
     - elasticsearch
     - kibana
@@ -27,6 +28,7 @@
   remote_user: ec2-user
   serial: 100%
   roles:
+    - common
     - metricbeat
     - prometheus
 
@@ -34,12 +36,14 @@
   remote_user: ec2-user
   serial: 100%
   roles:
+    - common
     - grafana
 
 - hosts: kafka
   remote_user: ec2-user
   serial: 33%
   roles:
+    - common
     - java
     - filebeat
     - metricbeat

@@ -1,10 +1,30 @@
 ---
 
-- name: copy server.properties {{ kafka_home }}/config/server.properties
+
+- name: create {{ kafka_log_dir }}
+  become: yes
+  file:
+    path: "{{ kafka_log_dir }}/kraft-combined-logs"
+    state: directory
+    mode: 0777
+    recurse: yes
+  notify: "restart kafka"
+
+- name: copy server.properties {{ kafka_home }}/config/kraft/server.properties
   become: yes
   template:
     src: templates/server.properties.j2
-    dest: "{{ kafka_home }}/config/server.properties"
+    dest: "{{ kafka_home }}/config/kraft/server.properties"
+  notify: "restart kafka"
+
+- name: check if kraft logs dir has been initialized
+  shell: "{{ kafka_home }}/bin/kafka-storage.sh info -c {{ kafka_home }}/config/kraft/server.properties"
+  register: storage_init
+  ignore_errors: yes
+
+- name: init kraft logs dir
+  shell: "{{ kafka_home }}/bin/kafka-storage.sh format -t {{ kafka_cluster_id }} -c {{ kafka_home }}/config/kraft/server.properties"
+  when: '"is not formatted" in storage_init.stdout'
   notify: "restart kafka"
 
 - name: copy kafka.environment {{ kafka_home }}/kafka.environment
@@ -25,13 +45,6 @@
   template:
     src: templates/prometheus_agent.yml.j2
     dest: "{{ kafka_home }}/config/prometheus_agent.yml"
-  notify: "restart kafka"
-
-- name: create {{ kafka_log_dir }}
-  become: yes
-  file:
-    path: "{{ kafka_log_dir }}"
-    state: directory
   notify: "restart kafka"
 
 - name: copy filebeat kafka configs to /etc/filebeat/modules.d/kafka.yml
@@ -73,7 +86,7 @@
     src: templates/client-zookeeper-ssl.properties.j2
     dest: "{{ playbook_dir }}/../{{ ssl_exchange }}/client-zookeeper-ssl.properties"
   delegate_to: localhost
-  when: secure|bool  
+  when: secure|bool
 
 - meta: flush_handlers
 

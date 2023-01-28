@@ -7,3 +7,7 @@
     owner: root
     group: root
     mode: 0644
+
+- name: "run the SHA1 enable"
+  become: yes
+  shell : update-crypto-policies --set DEFAULT:SHA1

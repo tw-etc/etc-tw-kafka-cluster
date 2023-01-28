@@ -13,31 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#
-# This configuration file is intended for use in KRaft mode, where
-# Apache ZooKeeper is not present.  See config/kraft/README.md for details.
-#
+# see kafka.server.KafkaConfig for additional details and defaults
 
 ############################# Server Basics #############################
 
-# The role of this server. Setting this puts us in KRaft mode
-process.roles=broker,controller
+# The id of the broker. This must be set to a unique integer for each broker.
+broker.id={{ groups.kafka.index(inventory_hostname) }}
 
-# The node id associated with this instance's roles
-node.id={{ groups.kafka.index(inventory_hostname)+1 }}
+# Disable auto topic creation, default value is true
+auto.create.topics.enable=false
 
-# The connect string for the controller quorum
-# controller.quorum.voters=1@localhost:9093
-# controller.quorum.voters=1@localhost:9092,2@localhost:9093,3@localhost:9094
-controller.quorum.voters={% for node in groups['zookeeper'] -%}
-{% if loop.index == loop.length -%}
-{{ loop.index }}@{{ node }}:9093
-{% else %}
-{{ loop.index }}@{{ node }}:9093,
-{%- endif %}
-{%- endfor %}
-
-
+# Switch to enable topic deletion or not, default value is false
+#delete.topic.enable=true
 
 ############################# Socket Server Settings #############################
 
@@ -47,25 +34,28 @@ controller.quorum.voters={% for node in groups['zookeeper'] -%}
 #     listeners = listener_name://host_name:port
 #   EXAMPLE:
 #     listeners = PLAINTEXT://your.host.name:9092
-listeners=PLAINTEXT://{{ inventory_hostname }}:9092,CONTROLLER://{{ inventory_hostname }}:9093
-inter.broker.listener.name=PLAINTEXT
+{% if secure|bool %}
+listeners=SSL://0.0.0.0:9093
+{% else %}
+listeners=PLAINTEXT://0.0.0.0:9092
+{% endif %}
 
 # Hostname and port the broker will advertise to producers and consumers. If not set,
 # it uses the value for "listeners" if configured.  Otherwise, it will use the value
 # returned from java.net.InetAddress.getCanonicalHostName().
+{% if secure|bool %}
+advertised.listeners=SSL://{{ inventory_hostname }}:9093
+{% else %}
 advertised.listeners=PLAINTEXT://{{ inventory_hostname }}:9092
-
-# Listener, host name, and port for the controller to advertise to the brokers. If
-# this server is a controller, this listener must be configured.
-controller.listener.names=CONTROLLER
+{% endif %}
 
 # Maps listener names to security protocols, the default is for them to be the same. See the config documentation for more details
-listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SSL:SSL,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_SSL:SASL_SSL
+#listener.security.protocol.map=PLAINTEXT:PLAINTEXT,SSL:SSL,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_SSL:SASL_SSL
 
-# The number of threads that the server uses for receiving requests from the network and sending responses to the network
+# The number of threads handling network requests
 num.network.threads=3
 
-# The number of threads that the server uses for processing requests, which may include disk I/O
+# The number of threads doing disk I/O
 num.io.threads=8
 
 # The send buffer (SO_SNDBUF) used by the socket server
@@ -80,8 +70,8 @@ socket.request.max.bytes=104857600
 
 ############################# Log Basics #############################
 
-# A comma separated list of directories under which to store log files
-log.dirs={{ kafka_log_dir }}/kraft-combined-logs
+# A comma seperated list of directories under which to store log files
+log.dirs={{ kafka_log_dir }}
 
 # The default number of log partitions per topic. More partitions allow greater
 # parallelism for consumption, but this will also result in more files across
@@ -95,8 +85,8 @@ num.recovery.threads.per.data.dir=1
 ############################# Internal Topic Settings  #############################
 # The replication factor for the group metadata internal topics "__consumer_offsets" and "__transaction_state"
 # For anything other than development testing, a value greater than 1 is recommended to ensure availability such as 3.
-offsets.topic.replication.factor=1
-transaction.state.log.replication.factor=1
+offsets.topic.replication.factor=3
+transaction.state.log.replication.factor=3
 transaction.state.log.min.isr=1
 
 ############################# Log Flush Policy #############################
@@ -114,7 +104,7 @@ transaction.state.log.min.isr=1
 #log.flush.interval.messages=10000
 
 # The maximum amount of time a message can sit in a log before we force a flush
-#log.flush.interval.ms=1000
+log.flush.interval.ms=1000
 
 ############################# Log Retention Policy #############################
 
@@ -136,3 +126,59 @@ log.segment.bytes=1073741824
 # The interval at which log segments are checked to see if they can be deleted according
 # to the retention policies
 log.retention.check.interval.ms=300000
+
+############################# Authentication and SSL ###########################
+
+{% if secure|bool %}
+ssl.truststore.location=/usr/local/server.truststore.jks
+ssl.truststore.password={{ truststore_pwd }}
+ssl.keystore.location=/usr/local/server.keystore.jks
+ssl.keystore.password={{ keystore_pwd }}
+ssl.key.password={{ key_pwd }}
+
+security.inter.broker.protocol=SSL
+
+ssl.endpoint.identification.algorithm=HTTPS
+ssl.client.auth=required
+ssl.enabled.protocols=TLSv1.2
+
+authorizer.class.name=kafka.security.auth.SimpleAclAuthorizer
+allow.everyone.if.no.acl.found=false
+#super.users=User:CN=kafka,OU=org,O=org,L=home,ST=Bavaria,C=DE
+{% else %}
+security.inter.broker.protocol=PLAINTEXT
+{% endif %}
+
+############################# Zookeeper #############################
+
+# Zookeeper connection string (see zookeeper docs for details).
+# This is a comma separated host:port pairs, each corresponding to a zk
+# server. e.g. "127.0.0.1:3000,127.0.0.1:3001,127.0.0.1:3002".
+# You can also append an optional chroot string to the urls to specify the
+# root directory for all kafka znodes.
+
+{% if secure|bool %}
+zookeeper.connect={% for server in groups['zookeeper'] %}{% if loop.index > 1%},{% endif %}{{ server }}:2182{% endfor %}
+
+zookeeper.ssl.client.enable=true
+zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty
+zookeeper.ssl.keystore.location=/usr/local/server.keystore.jks
+zookeeper.ssl.keystore.password={{ keystore_pwd }}
+zookeeper.ssl.truststore.location=/usr/local/server.truststore.jks
+zookeeper.ssl.truststore.password={{ truststore_pwd }}
+zookeeper.set.acl=true
+{% else %}
+zookeeper.connect={% for server in groups['zookeeper'] %}{% if loop.index > 1%},{% endif %}{{ server }}:2181{% endfor %}
+{% endif %}
+
+
+# Timeout in ms for connecting to zookeeper
+zookeeper.connection.timeout.ms=6000
+############################# Group Coordinator Settings #############################
+
+# The following configuration specifies the time, in milliseconds, that the GroupCoordinator will delay the initial consumer rebalance.
+# The rebalance will be further delayed by the value of group.initial.rebalance.delay.ms as new members join the group, up to a maximum of max.poll.interval.ms.
+# The default value for this is 3 seconds.
+# We override this to 0 here as it makes for a better out-of-the-box experience for development and testing.
+# However, in production environments the default value of 3 seconds is more suitable as this will help to avoid unnecessary, and potentially expensive, rebalances during application startup.
+group.initial.rebalance.delay.ms=0
